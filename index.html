@@ -237,10 +237,8 @@
     <header class="header">
       <div class="brand">
         <h1 id="title">Ancestral Weapons</h1>
-        <small id="subtitle">Tier 1 • Níveis 1–5 • Catálogo</small>
       </div>
       <div class="controls">
-        <span class="badge"><span class="gold">Tier 1</span> • Lv 1–5</span>
         <!-- Language segmented toggle -->
         <div class="seg" id="lang_seg" role="group" aria-label="Idioma">
           <input type="radio" name="lang" id="lang_pt" value="pt-BR" checked>
@@ -601,7 +599,6 @@ function norm(s){ return (s||'').toLowerCase().normalize('NFD').replace(/[\\u030
 function i18n(){
   const T = UI[LANG];
   document.getElementById('title').textContent = T.title;
-  document.getElementById('subtitle').textContent = T.subtitle;
   document.getElementById('search_header').textContent = T.search_header;
   document.getElementById('search_label').textContent = T.search_label;
   qEl.placeholder = T.search_placeholder;
