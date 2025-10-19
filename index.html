@@ -505,6 +505,19 @@ const DATA = [
   }
 ];
 
+
+// --- Patch: ensure 'activated' tag exists for non-permanent features ---
+try{
+  DATA.forEach(it => {
+    const actPT = (it.pt && it.pt.activation || "").toLowerCase();
+    const actEN = (it.en && it.en.activation || "").toLowerCase();
+    const isPermanent = actPT.includes("permanente") || actEN.includes("permanent");
+    if(!isPermanent){
+      if(!Array.isArray(it.tags)) it.tags = [];
+      if(!it.tags.includes("activated")) it.tags.push("activated");
+    }
+  });
+}catch(e){ /* noop */ }
 // UI text
 const UI = {
   "pt-BR":{
@@ -518,7 +531,7 @@ const UI = {
     stats:(v,t)=>`Mostrando <strong>${v}</strong> de <strong>${t}</strong> itens`,
     footnote:`<strong>Nota:</strong> Este catálogo cobre apenas <em>Tier 1</em> (níveis 1–5). Para novos Tiers, copie os cards e ajuste <code>level</code>, <code>cost</code> e <code>tags</code>.`,
     labels:{ requirements:"Requisitos", focus:"Foco", cost:"Custo", activation:"Ativação" },
-    flag_activation:"ATIVAÇÃO",
+    flag_activation:"ATIVAÇÃO", flag_permanent:"PERMANENTE", flag_activated:"ATIVADO",
     read_more:"Ler mais →",
     level:"Nível",
     cost:"Custo",
@@ -527,7 +540,7 @@ const UI = {
     all_chip:"todos",
     tagNames:{
       defense:"defesa", melee:"corpo-a-corpo", shield:"escudo", reaction:"reação",
-      offense:"ofensivo", weapon:"arma", damage:"dano", permanent:"permanente",
+      offense:"ofensivo", weapon:"arma", damage:"dano", permanent:"permanente", activated:"ativado",
       elemental:"elemental", limited:"limitado", action:"ação",
       magic:"magia", spell:"magia", focus:"foco", cantrip:"truque",
       economy:"economia", rest:"descanso", level1:"nível 1", level2:"nível 2",
@@ -552,7 +565,7 @@ const UI = {
     stats:(v,t)=>`Showing <strong>${v}</strong> of <strong>${t}</strong> items`,
     footnote:`<strong>Note:</strong> This catalog covers only <em>Tier 1</em> (levels 1–5). For new tiers, copy cards and adjust <code>level</code>, <code>cost</code> and <code>tags</code>.`,
     labels:{ requirements:"Requirements", focus:"Focus", cost:"Cost", activation:"Activation" },
-    flag_activation:"ACTIVATION",
+    flag_activation:"ACTIVATION", flag_permanent:"PERMANENT", flag_activated:"ACTIVATED",
     read_more:"Read more →",
     level:"Level",
     cost:"Cost",
@@ -561,7 +574,7 @@ const UI = {
     all_chip:"all",
     tagNames:{
       defense:"defense", melee:"melee", shield:"shield", reaction:"reaction",
-      offense:"offense", weapon:"weapon", damage:"damage", permanent:"permanent",
+      offense:"offense", weapon:"weapon", damage:"damage", permanent:"permanent", activated:"activated",
       elemental:"elemental", limited:"limited", action:"action",
       magic:"magic", spell:"spell", focus:"focus", cantrip:"cantrip",
       economy:"economy", rest:"rest", level1:"level 1", level2:"level 2",
@@ -658,7 +671,7 @@ function makeCard(item){
   el.dataset.cost = item.cost;
   el.dataset.tags = item.tags.join(',');
   el.innerHTML = `
-    <div class="card-head"><span class="flag">${UI[LANG].flag_activation}</span><span class="tierpill">Tier ${item.tier || 1}</span></div>
+    <div class="card-head"><span class="flag">${flagFromActivation(L.activation)}</span><span class="tierpill">Tier ${item.tier || 1}</span></div>
     <h2 class="title">${L.name}</h2>
     <p class="lead">${L.desc}</p>
     <div class="byline">
@@ -750,6 +763,13 @@ function syncTagCollapse(){
 }
 window.addEventListener('DOMContentLoaded', syncTagCollapse);
 window.addEventListener('resize', syncTagCollapse);
+
+
+function flagFromActivation(txt){
+  const s = (txt||'').toLowerCase();
+  if(s.includes('permanente') || s.includes('permanent')) return UI[LANG].flag_permanent;
+  return UI[LANG].flag_activated;
+}
 
 // Events
 qEl.addEventListener('input', update);
