@@ -222,20 +222,13 @@
          border-right:2px solid var(--black); border-bottom:2px solid var(--black);
          transform:rotate(45deg); transition:transform .15s ease; margin-left:.5rem; }
   details.collapse[open] .chev{ transform:rotate(-135deg) translateY(2px); }
-  @media (min-width:980px){
-    details.collapse[open] > summary{ pointer-events:none }
-  }
+  
   /* Desktop always expanded */
-  @media (min-width:980px){
-    details.collapse{ display:block }
-    details.collapse > div{ display:block !important }
-    details.collapse:not([open]) > div{ display:block !important }
-  }
+  
 
   /* Card header with activation + tier */
   .card-head{ display:flex; align-items:center; justify-content:space-between; gap:.75rem; }
-  .tierpill{ font-size:.72rem; padding:.2rem .45rem; border-radius:999px; border:1.5px solid var(--gold);
-             background:#fff; color:var(--black); font-weight:700; }
+  .tierpill{ font-size:.72rem; padding:.2rem .45rem; border-radius:999px; border:none; background:transparent; color: var(--gray-500); font-weight:600; }
 
 </style>
 </head>
