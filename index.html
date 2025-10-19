@@ -1,0 +1,771 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Ancestral Weapons — Tier 1 (Lv 1–5)</title>
+<style>
+  :root{
+    /* 70/20/10 palette + details */
+    --white:#ffffff;     /* 70% */
+    --black:#121212;     /* 20% */
+    --red:#c1121f;       /* 10% accent */
+    --red-dark:#9a0d18;
+    --gray-025:#fbfcfe;
+    --gray-050:#f8f9fb;
+    --gray-100:#f1f3f5;
+    --gray-200:#e5e7eb;
+    --gray-300:#d1d5db;
+    --gray-500:#6b7280;
+    --gold:#caa43b;
+  }
+
+  *{ box-sizing:border-box }
+  body{
+    margin:0;
+    background: var(--gray-050);
+    color: var(--black);
+    font: 16px/1.6 ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans";
+  }
+
+  /* Page frame with sidebar */
+  .wrap{
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: clamp(14px, 2.4vw, 24px);
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  @media (min-width: 980px){
+    .wrap{ grid-template-columns: 290px 1fr; }
+  }
+
+  /* Header */
+  .header{
+    grid-column: 1 / -1;
+    display:flex;
+    align-items:flex-end;
+    justify-content:space-between;
+    gap: .75rem 1rem;
+    padding-bottom: 12px;
+    border-bottom: 2px solid var(--gray-200);
+  }
+  .brand h1{ margin:0; font-size: clamp(1.6rem, 4vw, 2.3rem); letter-spacing:.3px; }
+  .brand small{ display:block; color: var(--gray-500); margin-top:.25rem; }
+  .controls{ display:flex; gap:.6rem; align-items:center; flex-wrap:wrap; }
+  .badge{
+    border: 1.5px solid var(--gold);
+    color: var(--black);
+    padding:.25rem .6rem;
+    border-radius: 999px;
+    font-size:.85rem;
+    background: linear-gradient(180deg, #fff, #fbf7e6);
+  }
+
+  /* CSS-only look toggle (radio based) */
+  .seg{
+    display:inline-flex;
+    border:1px solid var(--gray-300);
+    border-radius: 999px;
+    padding:2px;
+    background: var(--white);
+    gap:2px;
+  }
+  .seg input{ position:absolute; opacity:0; pointer-events:none; }
+  .seg label{
+    position:relative;
+    padding:.32rem .7rem;
+    border-radius:999px;
+    cursor:pointer;
+    font-size:.88rem;
+    line-height:1;
+    color: var(--black);
+  }
+  .seg input:checked + label{
+    background: var(--red);
+    color:#fff;
+  }
+
+  /* Sidebar */
+  .sidebar{
+    position: relative;
+    gap: 12px;
+    display:flex;
+    flex-direction:column;
+  }
+  @media (min-width: 980px){
+    .sidebar{ position: sticky; top: 16px; align-self: start; }
+  }
+  .panel{
+    border: 1px solid var(--gray-200);
+    border-radius: 14px;
+    background: var(--white);
+    padding: 12px;
+    box-shadow: 0 6px 18px rgba(0,0,0,.04);
+  }
+  .panel h3{ margin:.1rem 0 .5rem; font-size:1.02rem; letter-spacing:.2px; }
+  .field{ display:flex; flex-direction:column; gap:.35rem; }
+  label{ font-weight:700; }
+  input[type="search"]{
+    appearance:none;
+    width:100%;
+    padding:.65rem .8rem;
+    border-radius: 10px;
+    border:1px solid var(--gray-300);
+    background: var(--white);
+    color: var(--black);
+  }
+  .stats{ color: var(--gray-500); font-size:.95rem; }
+
+  /* Tag cloud — small white font on red rounded pills */
+  .chips{
+    display:flex; flex-wrap:wrap; gap:.45rem; padding:.25rem 0;
+  }
+  .chip{
+    border:2px solid var(--red);
+    background: var(--red);
+    color: #fff;
+    padding:.18rem .55rem;
+    border-radius: 999px;
+    font-size:.78rem;   /* menor */
+    letter-spacing:.1px;
+    cursor:pointer;
+    transition: transform .08s ease, background .12s ease, border-color .12s ease, color .12s ease;
+  }
+  .chip:hover{ transform: translateY(-1px); background: var(--red-dark); border-color: var(--red-dark); }
+  .chip.active{
+    background: #fff;
+    color: var(--red);
+    border-color: var(--red-dark);
+    box-shadow: 0 1px 0 rgba(0,0,0,.05);
+  }
+
+  /* Content */
+  .content{ display:block; }
+
+  /* Toolbar above grid: stats + sort */
+  .toolbar{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap: .75rem;
+    margin-bottom: 10px;
+    flex-wrap: wrap;
+  }
+  .sortbar{ display:flex; align-items:center; gap:.5rem; flex-wrap:wrap; }
+  .label-muted{ color: var(--gray-500); font-weight:600; font-size:.9rem; }
+
+  /* Sort segmented */
+  .seg.small label{ padding:.28rem .6rem; font-size:.85rem; }
+  .dir{
+    display:inline-grid; grid-auto-flow:column; gap:2px;
+    border:1px solid var(--gray-300); border-radius:8px; padding:2px; background:#fff;
+  }
+  .dir input{ position:absolute; opacity:0 }
+  .dir label{ padding:.25rem .5rem; border-radius:6px; cursor:pointer; font-size:.85rem }
+  .dir input:checked + label{ background: var(--gray-100); }
+
+  /* Grid and cards */
+  .grid{
+    display:grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: clamp(12px, 1.6vw, 18px);
+  }
+  .card{
+    background: var(--white);
+    border: 1px solid var(--gray-200);
+    border-radius: 16px;
+    padding: 16px;
+    box-shadow: 0 8px 20px rgba(0,0,0,.04);
+    transition: transform .12s ease, box-shadow .12s ease, border-color .12s ease;
+  }
+  .card:hover{ transform: translateY(-2px); box-shadow: 0 12px 28px rgba(0,0,0,.08); border-color: var(--gray-300); }
+
+  /* Composed card layout (inspired by reference) */
+  .flag{ display:inline-block; font-size:.72rem; padding:.18rem .5rem; border-radius:999px; border:2px solid var(--red); color:var(--red); background:#fff; font-weight:800; letter-spacing:.03em; }
+  .title{ font-size:1.15rem; margin:.6rem 0 .25rem; line-height:1.35; }
+  .lead{ color:#2b2b2b; margin:0 0 .6rem; }
+  .byline{ display:flex; align-items:center; gap:.5rem; color: var(--gray-500); font-size:.9rem; margin:.2rem 0 .6rem; }
+  .dot{ width:6px; height:6px; background: var(--gray-300); border-radius:999px; display:inline-block; }
+  .meta{ list-style:none; padding:0; margin:.35rem 0 .6rem; display:flex; flex-wrap:wrap; gap:.35rem .5rem; }
+  .meta li{ font-size:.88rem; color:var(--black); background:#fff; border:1px dashed var(--gray-300); padding:.22rem .5rem; border-radius:8px; }
+  .tags{ display:flex; flex-wrap:wrap; gap:.35rem; margin:.25rem 0 .35rem; }
+  .tag{ font-size:.74rem; padding:.18rem .45rem; background: #fff; border:1px dashed var(--gray-300); border-radius: 999px; color: var(--black); }
+
+  details.readmore{ margin-top:.4rem; }
+  details.readmore > summary{
+    list-style:none;
+    cursor:pointer;
+    color: var(--red);
+    font-weight:700;
+  }
+  details.readmore > summary::marker{ display:none; }
+  details.readmore[open] > summary{ color: var(--red-dark); }
+  details.readmore .more{ color: var(--gray-500); font-size:.95rem; margin-top:.4rem; }
+
+  footer.page{
+    margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--gray-200);
+    color: var(--gray-500); font-size:.95rem;
+  }
+  .gold{ color: var(--gold) }
+  /* Collapsible tag panel */
+  details.collapse{ border:0; padding:0; }
+  details.collapse > summary{
+    list-style:none; cursor:pointer; user-select:none;
+    padding:.5rem .6rem; margin:-.2rem 0 .2rem;
+    display:flex; align-items:center; justify-content:space-between;
+    font-weight:700; border-radius:10px;
+  }
+  details.collapse > summary::marker{ display:none }
+  .chev{ width:12px; height:12px; display:inline-block;
+         border-right:2px solid var(--black); border-bottom:2px solid var(--black);
+         transform:rotate(45deg); transition:transform .15s ease; margin-left:.5rem; }
+  details.collapse[open] .chev{ transform:rotate(-135deg) translateY(2px); }
+  @media (min-width:980px){
+    details.collapse[open] > summary{ pointer-events:none }
+  }
+  /* Desktop always expanded */
+  @media (min-width:980px){
+    details.collapse{ display:block }
+    details.collapse > div{ display:block !important }
+    details.collapse:not([open]) > div{ display:block !important }
+  }
+
+  /* Card header with activation + tier */
+  .card-head{ display:flex; align-items:center; justify-content:space-between; gap:.75rem; }
+  .tierpill{ font-size:.72rem; padding:.2rem .45rem; border-radius:999px; border:1.5px solid var(--gold);
+             background:#fff; color:var(--black); font-weight:700; }
+
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <header class="header">
+      <div class="brand">
+        <h1 id="title">Ancestral Weapons</h1>
+        <small id="subtitle">Tier 1 • Níveis 1–5 • Catálogo</small>
+      </div>
+      <div class="controls">
+        <span class="badge"><span class="gold">Tier 1</span> • Lv 1–5</span>
+        <!-- Language segmented toggle -->
+        <div class="seg" id="lang_seg" role="group" aria-label="Idioma">
+          <input type="radio" name="lang" id="lang_pt" value="pt-BR" checked>
+          <label for="lang_pt">PT</label>
+          <input type="radio" name="lang" id="lang_en" value="en-US">
+          <label for="lang_en">EN</label>
+        </div>
+      </div>
+    </header>
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="panel">
+        <h3 id="search_header">Busca</h3>
+        <div class="field">
+          <label id="search_label" for="q">Palavra-chave</label>
+          <input id="q" type="search" placeholder="Buscar por nome, texto ou tag…" autocomplete="off" />
+          <div class="stats" id="stats">Mostrando <strong>…</strong> itens</div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h3 id="tier_header">Tier</h3>
+        <div class="seg small" id="tier_seg" role="group" aria-label="Tier"></div>
+      </div>
+
+      <div class="panel">
+        <details class="collapse">
+          <summary><span id="filter_header">Tags</span><span class="chev" aria-hidden="true"></span></summary>
+          <div class="chips" id="tagBar"></div>
+        </details>
+      </div>
+    </aside>
+
+    <!-- Content -->
+    <main class="content">
+      <!-- Toolbar above grid: stats + sort -->
+      <div class="toolbar" role="region" aria-label="Resumo">
+        <div class="stats" id="stats_top">—</div>
+
+        <div class="sortbar">
+          <span class="label-muted" id="sort_label_top">Ordenar</span>
+          <!-- Sort field segmented -->
+          <div class="seg small" id="sort_field_seg" role="group" aria-label="Critério">
+            <input type="radio" name="sort_field" id="sf_level" value="level" checked>
+            <label for="sf_level">Level</label>
+            <input type="radio" name="sort_field" id="sf_cost" value="cost">
+            <label for="sf_cost">Cost</label>
+            <input type="radio" name="sort_field" id="sf_name" value="name">
+            <label for="sf_name">Name</label>
+          </div>
+          <!-- Sort direction -->
+          <div class="dir" id="sort_dir_seg" role="group" aria-label="Direção">
+            <input type="radio" name="sort_dir" id="sd_asc" value="asc" checked>
+            <label for="sd_asc">↑</label>
+            <input type="radio" name="sort_dir" id="sd_desc" value="desc">
+            <label for="sd_desc">↓</label>
+          </div>
+        </div>
+      </div>
+
+      <section class="grid" id="grid" aria-label="Lista de habilidades"></section>
+
+      <footer class="page">
+        <p id="footnote"><strong>Nota:</strong> Este catálogo cobre apenas <em>Tier 1</em> (níveis 1–5). Para novos Tiers, copie os cards e ajuste <code>level</code>, <code>cost</code> e <code>tags</code>.</p>
+      </footer>
+    </main>
+  </div>
+
+<script>
+// ===== Data (same structure) =====
+const DATA = [
+  { level:1, cost:2, tags:["defense","melee","shield","reaction"],
+    pt:{ name:"Duelist", activation:"Ativação: 1 uso", requirements:"Level 1", focus:"Equipment, Melee Weapon, Shield",
+         desc:"Quando for atingido por um ataque corpo-a-corpo que você possa ver, use sua reação para somar +2 à CA até o início do seu próximo turno." },
+    en:{ name:"Duelist", activation:"Activation: 1 use", requirements:"Level 1", focus:"Equipment, Melee Weapon, Shield",
+         desc:"When hit by a melee attack you can see, use your reaction to add +2 to AC until the start of your next turn." }
+  },
+  { level:5, cost:5, tags:["offense","weapon","damage","permanent"],
+    pt:{ name:"Enhance Weapon", activation:"Ativação: Permanente", requirements:"Level 5", focus:"Melee Weapon, Ranged Weapon",
+         desc:"+1 em jogadas de ataque e de dano realizadas com esta arma." },
+    en:{ name:"Enhance Weapon", activation:"Activation: Permanent", requirements:"Level 5", focus:"Melee Weapon, Ranged Weapon",
+         desc:"+1 to attack and damage rolls made with this weapon." }
+  },
+  { level:3, cost:3, tags:["offense","elemental","damage","limited","action"],
+    pt:{ name:"Elemental Infusion", activation:"Ativação: 1 uso", requirements:"Level 3", focus:"Melee Weapon, Ranged Weapon",
+         desc:"Como parte de uma Ação de Ataque, imbua a arma com ácido, frio, fogo, relâmpago, trovejante ou veneno. Ataques causam +1d4 desse tipo." },
+    en:{ name:"Elemental Infusion", activation:"Activation: 1 use", requirements:"Level 3", focus:"Melee Weapon, Ranged Weapon",
+         desc:"As part of an Attack Action, imbue the weapon with acid, cold, fire, lightning, thunder or poison. Attacks deal +1d4 of that type." }
+  },
+  { level:5, cost:5, tags:["magic","spell","focus","permanent"],
+    pt:{ name:"Magus", activation:"Ativação: Permanente", requirements:"Level 5, conjurador", focus:"Arcane Focus, Druidic Focus, Divine Symbol",
+         desc:"Enquanto segura este foco mágico, você tem +1 nos ataques de magia e +1 na CD de suas magias." },
+    en:{ name:"Magus", activation:"Activation: Permanent", requirements:"Level 5, spellcaster", focus:"Arcane Focus, Druidic Focus, Divine Symbol",
+         desc:"While holding this magical focus you have +1 to spell attack rolls and +1 to your spell save DC." }
+  },
+  { level:1, cost:2, tags:["magic","cantrip","limited","focus"],
+    pt:{ name:"Magical Core (Level 0)", activation:"Ativação: 1 uso", requirements:"Level 1, limitado", focus:"Any weapon or equipment",
+         desc:"Escolha um truque (Wiz/Bard/Cleric/Druid). Conjure como Ação Mágica usando o item como foco e origem. Atributo à escolha." },
+    en:{ name:"Magical Core (Level 0)", activation:"Activation: 1 use", requirements:"Level 1, limited", focus:"Any weapon or equipment",
+         desc:"Choose a cantrip (Wiz/Bard/Cleric/Druid). Cast as a Magic Action using the item as focus and origin. Choose the casting ability." }
+  },
+  { level:1, cost:3, tags:["magic","spell","economy","rest","permanent"],
+    pt:{ name:"Spell Link", activation:"Ativação: Permanente", requirements:"Level 1, apenas conjurador, limitado", focus:"Any weapon or equipment",
+         desc:"Após um descanso longo, escolha uma magia de 1º nível conhecida. Conjure-a 1× sem gastar espaço de magia." },
+    en:{ name:"Spell Link", activation:"Activation: Permanent", requirements:"Level 1, spellcaster only, limited", focus:"Any weapon or equipment",
+         desc:"After a long rest, choose a 1st-level spell you know. Cast it once without expending a spell slot." }
+  },
+  { level:3, cost:3, tags:["magic","spell","level1","limited","focus"],
+    pt:{ name:"Magical Core (Level 1)", activation:"Ativação: 1 uso", requirements:"Level 3, limitado", focus:"Any weapon or equipment",
+         desc:"Escolha uma magia de 1º nível (Wiz/Bard/Cleric/Druid). Conjure como Ação Mágica usando o item como foco e origem." },
+    en:{ name:"Magical Core (Level 1)", activation:"Activation: 1 use", requirements:"Level 3, limited", focus:"Any weapon or equipment",
+         desc:"Choose a 1st-level spell (Wiz/Bard/Cleric/Druid). Cast as a Magic Action using the item as focus and origin." }
+  },
+  { level:5, cost:5, tags:["magic","spell","level2","limited","focus"],
+    pt:{ name:"Magical Core (Level 2)", activation:"Ativação: 1 uso", requirements:"Level 5, limitado", focus:"Any weapon or equipment",
+         desc:"Escolha uma magia de 2º nível (Wiz/Bard/Cleric/Druid). Conjure como Ação Mágica usando o item como foco e origem." },
+    en:{ name:"Magical Core (Level 2)", activation:"Activation: 1 use", requirements:"Level 5, limited", focus:"Any weapon or equipment",
+         desc:"Choose a 2nd-level spell (Wiz/Bard/Cleric/Druid). Cast as a Magic Action using the item as focus and origin." }
+  },
+  { level:1, cost:1, tags:["social","intimidation","skill","permanent"],
+    pt:{ name:"Bully", activation:"Ativação: Permanente", requirements:"Level 1", focus:"Any weapon or equipment",
+         desc:"Vantagem em Intimidação (Força) quando o alvo puder vê-lo e você portar o item." },
+    en:{ name:"Bully", activation:"Activation: Permanent", requirements:"Level 1", focus:"Any weapon or equipment",
+         desc:"Advantage on Intimidation (Strength) checks when the target can see you and you are wearing this item." }
+  },
+  { level:1, cost:1, tags:["defense","save","charm","permanent"],
+    pt:{ name:"Charmward", activation:"Ativação: Permanente", requirements:"Level 1", focus:"Any weapon or equipment",
+         desc:"Vantagem em resistências contra Enfeitiçado." },
+    en:{ name:"Charmward", activation:"Activation: Permanent", requirements:"Level 1", focus:"Any weapon or equipment",
+         desc:"You have advantage on saving throws against the Charmed condition." }
+  },
+  { level:1, cost:3, tags:["exploration","vision","permanent","utility"],
+    pt:{ name:"Darkvision", activation:"Ativação: Permanente", requirements:"Level 1", focus:"Any weapon or equipment",
+         desc:"Visão no escuro 60 ft. Se já possuir, dobra o alcance existente." },
+    en:{ name:"Darkvision", activation:"Activation: Permanent", requirements:"Level 1", focus:"Any weapon or equipment",
+         desc:"You have darkvision out to 60 feet. If you already have it, double the range you can see in darkness." }
+  },
+  { level:1, cost:1, tags:["defense","death","save","rest","permanent"],
+    pt:{ name:"Deathward", activation:"Ativação: Permanente", requirements:"Level 1", focus:"Any weapon or equipment",
+         desc:"Ao falhar um teste de morte, você pode escolher ter sucesso em vez disso (1× por descanso longo)." },
+    en:{ name:"Deathward", activation:"Activation: Permanent", requirements:"Level 1", focus:"Any weapon or equipment",
+         desc:"When you fail a death saving throw, you can choose to succeed instead (once per long rest)." }
+  },
+  { level:1, cost:1, tags:["defense","fear","save","permanent"],
+    pt:{ name:"Fearward", activation:"Ativação: Permanente", requirements:"Level 1", focus:"Any weapon or equipment",
+         desc:"Vantagem em resistências contra Medo." },
+    en:{ name:"Fearward", activation:"Activation: Permanent", requirements:"Level 1", focus:"Any weapon or equipment",
+         desc:"You have advantage on saving throws against the Frightened condition." }
+  },
+  { level:1, cost:1, tags:["magic","focus","utility","permanent"],
+    pt:{ name:"Focus", activation:"Ativação: Permanente", requirements:"Level 1", focus:"Any weapon",
+         desc:"Esta arma conta como foco de conjuração." },
+    en:{ name:"Focus", activation:"Activation: Permanent", requirements:"Level 1", focus:"Any weapon",
+         desc:"This weapon counts as a spellcasting focus." }
+  },
+  { level:3, cost:4, tags:["offense","slayer","damage","permanent"],
+    pt:{ name:"Giant-Bane", activation:"Ativação: Permanente", requirements:"Level 3", focus:"Any weapon",
+         desc:"Seus ataques causam +1d6 contra criaturas Grandes ou maiores." },
+    en:{ name:"Giant-Bane", activation:"Activation: Permanent", requirements:"Level 3", focus:"Any weapon",
+         desc:"Your attacks deal +1d6 to Large or bigger creatures." }
+  },
+  { level:1, cost:1, tags:["defense","control","weapon","permanent"],
+    pt:{ name:"Gripped", activation:"Ativação: Permanente", requirements:"Level 1", focus:"Any weapon",
+         desc:"Você não pode ser forçado a largar esta arma contra a vontade." },
+    en:{ name:"Gripped", activation:"Activation: Permanent", requirements:"Level 1", focus:"Any weapon",
+         desc:"You cannot be made to drop this weapon against your will." }
+  },
+  { level:1, cost:2, tags:["detection","utility","permanent"],
+    pt:{ name:"Sting", activation:"Ativação: Permanente", requirements:"Level 1", focus:"Any weapon",
+         desc:"Emite luz sutil quando uma criatura do tipo escolhido estiver a 30 ft (cor escolhida no upgrade)." },
+    en:{ name:"Sting", activation:"Activation: Permanent", requirements:"Level 1", focus:"Any weapon",
+         desc:"Sheds subtle light when a creature of the chosen type is within 30 ft. Choose the color when selecting the upgrade." }
+  },
+  { level:1, cost:2, tags:["utility","deception","stealth","permanent"],
+    pt:{ name:"Conceal Nature", activation:"Ativação: Permanente", requirements:"Level 1", focus:"Any weapon",
+         desc:"Ação para palavra de comando: a arma parece mundana. Outra ação para encerrar. Investigação CD 15 (Arcana) revela a ilusão." },
+    en:{ name:"Conceal Nature", activation:"Activation: Permanent", requirements:"Level 1", focus:"Any weapon",
+         desc:"Action to speak the command word: the weapon appears mundane. Speak again to end. DC 15 Intelligence (Arcana) reveals the illusion." }
+  },
+  { level:1, cost:1, tags:["utility","object","melee","permanent"],
+    pt:{ name:"Hinge-Bane", activation:"Ativação: Permanente", requirements:"Level 1", focus:"Melee weapons",
+         desc:"Você causa dano máximo contra objetos inanimados com ataques desta arma." },
+    en:{ name:"Hinge-Bane", activation:"Activation: Permanent", requirements:"Level 1", focus:"Melee weapons",
+         desc:"You deal maximum damage against inanimate objects with attacks from this weapon." }
+  },
+  { level:1, cost:1, tags:["offense","cheat-death","reaction","limited"],
+    pt:{ name:"Indomitable (Level 1)", activation:"Ativação: 1 uso", requirements:"Level 1", focus:"Any weapons",
+         desc:"Ao cair para 0 PV, faça imediatamente um ataque com esta arma antes de ficar inconsciente." },
+    en:{ name:"Indomitable (Level 1)", activation:"Activation: 1 use", requirements:"Level 1", focus:"Any weapons",
+         desc:"When reduced to 0 hit points, immediately make an attack with this weapon before falling unconscious." }
+  },
+  { level:1, cost:2, tags:["control","melee","crit","permanent"],
+    pt:{ name:"Overpower (Brawler)", activation:"Ativação: Permanente", requirements:"Level 1", focus:"Any weapon",
+         desc:"Em um 19–20 no d20 de ataque, você pode derrubar o alvo no chão." },
+    en:{ name:"Overpower (Brawler)", activation:"Activation: Permanent", requirements:"Level 1", focus:"Any weapon",
+         desc:"On a 19–20 to hit, you can knock the target prone." }
+  },
+  { level:1, cost:1, tags:["control","shove","crit","permanent"],
+    pt:{ name:"Overpower (Brutish)", activation:"Ativação: Permanente", requirements:"Level 1", focus:"Any weapon",
+         desc:"Em um 19–20 para acertar, empurre o alvo 3 m (10 ft) na direção escolhida." },
+    en:{ name:"Overpower (Brutish)", activation:"Activation: Permanent", requirements:"Level 1", focus:"Any weapon",
+         desc:"On a 19–20 to hit, shove the target 10 ft in a direction of your choice." }
+  },
+  { level:1, cost:2, tags:["control","fear","crit","permanent"],
+    pt:{ name:"Overpower (Dread)", activation:"Ativação: Permanente", requirements:"Level 1", focus:"Any weapon",
+         desc:"Em um 19–20 para acertar, o alvo fica amedrontado até o fim do seu próximo turno." },
+    en:{ name:"Overpower (Dread)", activation:"Activation: Permanent", requirements:"Level 1", focus:"Any weapon",
+         desc:"On a 19–20 to hit, the target is frightened until the end of your next turn." }
+  },
+  { level:1, cost:2, tags:["control","disarm","crit","permanent"],
+    pt:{ name:"Overpower (Disarming)", activation:"Ativação: Permanente", requirements:"Level 1", focus:"Any weapon",
+         desc:"Em um 19–20 para acertar, o alvo solta um item empunhado (cai em casa adjacente aleatória)." },
+    en:{ name:"Overpower (Disarming)", activation:"Activation: Permanent", requirements:"Level 1", focus:"Any weapon",
+         desc:"On a 19–20 to hit, the target drops one held item (it falls into a random adjacent square)." }
+  },
+  { level:1, cost:1, tags:["control","speed","save","crit","permanent"],
+    pt:{ name:"Overpower (Hamstring)", activation:"Ativação: Permanente", requirements:"Level 1", focus:"Any weapon",
+         desc:"Em um 19–20 para acertar, CD 14 Destreza ou o deslocamento do alvo é reduzido à metade até seu próximo turno." },
+    en:{ name:"Overpower (Hamstring)", activation:"Activation: Permanent", requirements:"Level 1", focus:"Any weapon",
+         desc:"On a 19–20 to hit, DC 14 Dexterity save or the target's speed is halved until your next turn." }
+  },
+  { level:1, cost:2, tags:["control","poison","save","crit","permanent"],
+    pt:{ name:"Overpower (Poisonous)", activation:"Ativação: Permanente", requirements:"Level 1", focus:"Any weapon",
+         desc:"Em um 19–20 para acertar, CD 14 Constituição ou o alvo fica Envenenado (repete o teste no fim de cada turno)." },
+    en:{ name:"Overpower (Poisonous)", activation:"Activation: Permanent", requirements:"Level 1", focus:"Any weapon",
+         desc:"On a 19–20 to hit, DC 14 Constitution save or the target is Poisoned (repeat the save at the end of each turn)." }
+  },
+  { level:1, cost:1, tags:["defense","poison","save","permanent"],
+    pt:{ name:"Poisonward", activation:"Ativação: Permanente", requirements:"Level 1", focus:"Any weapon or equipment",
+         desc:"Vantagem em resistências contra Envenenado." },
+    en:{ name:"Poisonward", activation:"Activation: Permanent", requirements:"Level 1", focus:"Any weapon or equipment",
+         desc:"Advantage on saving throws against the Poisoned condition." }
+  },
+  { level:1, cost:2, tags:["skill","utility","permanent"],
+    pt:{ name:"Proficient", activation:"Ativação: Permanente", requirements:"Level 1", focus:"Any weapon or equipment",
+         desc:"Você ganha proficiência em uma perícia à escolha." },
+    en:{ name:"Proficient", activation:"Activation: Permanent", requirements:"Level 1", focus:"Any weapon or equipment",
+         desc:"You gain proficiency in a skill of your choice." }
+  },
+  { level:1, cost:2, tags:["initiative","utility","permanent"],
+    pt:{ name:"Quick", activation:"Ativação: Permanente", requirements:"Level 1", focus:"Any weapon or equipment",
+         desc:"Vantagem em testes de iniciativa." },
+    en:{ name:"Quick", activation:"Activation: Permanent", requirements:"Level 1", focus:"Any weapon or equipment",
+         desc:"You have advantage on initiative rolls." }
+  },
+  { level:1, cost:1, tags:["magic","ritual","utility","permanent"],
+    pt:{ name:"Ritualist", activation:"Ativação: Permanente", requirements:"Level 1", focus:"Any weapon or equipment",
+         desc:"Tempo para rituais reduzido à metade enquanto estiver com o item." },
+    en:{ name:"Ritualist", activation:"Activation: Permanent", requirements:"Level 1", focus:"Any weapon or equipment",
+         desc:"Time to ritual-cast spells is halved while this item is in your possession." }
+  },
+  { level:1, cost:1, tags:["defense","cover","range","permanent"],
+    pt:{ name:"Shadowed", activation:"Ativação: Permanente", requirements:"Level 1", focus:"Any weapon or equipment",
+         desc:"Em cobertura, considere um grau acima (½ → ¾)." },
+    en:{ name:"Shadowed", activation:"Activation: Permanent", requirements:"Level 1", focus:"Any weapon or equipment",
+         desc:"When in cover, treat it as one step higher (e.g., half → three-quarters)." }
+  },
+  { level:1, cost:1, tags:["defense","range","permanent"],
+    pt:{ name:"Unflinching", activation:"Ativação: Permanente", requirements:"Level 1", focus:"Any weapon or equipment",
+         desc:"Estar a 1,5 m (5 ft) de criatura hostil não impõe desvantagem em seus ataques à distância." },
+    en:{ name:"Unflinching", activation:"Activation: Permanent", requirements:"Level 1", focus:"Any weapon or equipment",
+         desc:"Being within 5 ft of a hostile creature does not impose disadvantage on your ranged attacks." }
+  }
+];
+
+// UI text
+const UI = {
+  "pt-BR":{
+    title:"Ancestral Weapons",
+    subtitle:"Tier 1 • Níveis 1–5 • Catálogo",
+    search_header:"Busca",
+    search_label:"Palavra-chave",
+    search_placeholder:"Buscar por nome, texto ou tag…",
+    filter_header:"Tags",
+    sort_label_top:"Ordenar",
+    stats:(v,t)=>`Mostrando <strong>${v}</strong> de <strong>${t}</strong> itens`,
+    footnote:`<strong>Nota:</strong> Este catálogo cobre apenas <em>Tier 1</em> (níveis 1–5). Para novos Tiers, copie os cards e ajuste <code>level</code>, <code>cost</code> e <code>tags</code>.`,
+    labels:{ requirements:"Requisitos", focus:"Foco", cost:"Custo", activation:"Ativação" },
+    flag_activation:"ATIVAÇÃO",
+    read_more:"Ler mais →",
+    level:"Nível",
+    cost:"Custo",
+    perm_flag:"PERMANENTE",
+    oneuse_flag:"USO ÚNICO",
+    all_chip:"todos",
+    tagNames:{
+      defense:"defesa", melee:"corpo-a-corpo", shield:"escudo", reaction:"reação",
+      offense:"ofensivo", weapon:"arma", damage:"dano", permanent:"permanente",
+      elemental:"elemental", limited:"limitado", action:"ação",
+      magic:"magia", spell:"magia", focus:"foco", cantrip:"truque",
+      economy:"economia", rest:"descanso", level1:"nível 1", level2:"nível 2",
+      social:"social", intimidation:"intimidação", skill:"perícia",
+      exploration:"exploração", vision:"visão", death:"morte",
+      fear:"medo", slayer:"caçador", control:"controle",
+      detection:"detecção", deception:"engano", stealth:"furtividade",
+      object:"objeto", "cheat-death":"burlar a morte",
+      crit:"acerto 19–20", shove:"empurrão", speed:"velocidade",
+      poison:"veneno", initiative:"iniciativa", ritual:"ritual",
+      cover:"cobertura", range:"à distância", utility:"utilidade"
+    }
+  },
+  "en-US":{
+    title:"Ancestral Weapons",
+    subtitle:"Tier 1 • Levels 1–5 • Catalog",
+    search_header:"Search",
+    search_label:"Keyword",
+    search_placeholder:"Search by name, text or tag…",
+    filter_header:"Tags",
+    sort_label_top:"Sort",
+    stats:(v,t)=>`Showing <strong>${v}</strong> of <strong>${t}</strong> items`,
+    footnote:`<strong>Note:</strong> This catalog covers only <em>Tier 1</em> (levels 1–5). For new tiers, copy cards and adjust <code>level</code>, <code>cost</code> and <code>tags</code>.`,
+    labels:{ requirements:"Requirements", focus:"Focus", cost:"Cost", activation:"Activation" },
+    flag_activation:"ACTIVATION",
+    read_more:"Read more →",
+    level:"Level",
+    cost:"Cost",
+    perm_flag:"PERMANENT",
+    oneuse_flag:"ONE USE",
+    all_chip:"all",
+    tagNames:{
+      defense:"defense", melee:"melee", shield:"shield", reaction:"reaction",
+      offense:"offense", weapon:"weapon", damage:"damage", permanent:"permanent",
+      elemental:"elemental", limited:"limited", action:"action",
+      magic:"magic", spell:"spell", focus:"focus", cantrip:"cantrip",
+      economy:"economy", rest:"rest", level1:"level 1", level2:"level 2",
+      social:"social", intimidation:"intimidation", skill:"skill",
+      exploration:"exploration", vision:"vision", death:"death",
+      fear:"fear", slayer:"slayer", control:"control",
+      detection:"detection", deception:"deception", stealth:"stealth",
+      object:"object", "cheat-death":"cheat-death",
+      crit:"crit 19–20", shove:"shove", speed:"speed",
+      poison:"poison", initiative:"initiative", ritual:"ritual",
+      cover:"cover", range:"ranged", utility:"utility"
+    }
+  }
+};
+
+// ===== Globals =====
+const grid   = document.getElementById('grid');
+const qEl    = document.getElementById('q');
+const stats  = document.getElementById('stats');
+const statsTop = document.getElementById('stats_top');
+const tagBar = document.getElementById('tagBar');
+const langPT = document.getElementById('lang_pt');
+const langEN = document.getElementById('lang_en');
+
+const sortField = document.getElementById('sort_field_seg');
+const sortDir   = document.getElementById('sort_dir_seg');
+
+let LANG = 'pt-BR';
+let chosenTags = new Set();
+let sortBy = 'level'; // level | cost | name
+let sortDirection = 'asc'; // asc | desc
+
+function norm(s){ return (s||'').toLowerCase().normalize('NFD').replace(/[\\u0300-\\u036f]/g,'').replace(/\\s+/g,' ').trim(); }
+
+function i18n(){
+  const T = UI[LANG];
+  document.getElementById('title').textContent = T.title;
+  document.getElementById('subtitle').textContent = T.subtitle;
+  document.getElementById('search_header').textContent = T.search_header;
+  document.getElementById('search_label').textContent = T.search_label;
+  qEl.placeholder = T.search_placeholder;
+  document.getElementById('filter_header').textContent = T.filter_header;
+  document.getElementById('sort_label_top').textContent = T.sort_label_top;
+  document.getElementById('footnote').innerHTML = T.footnote;
+}
+
+function buildTagBar(){
+  const T = UI[LANG];
+  tagBar.innerHTML = '';
+  const set = new Set();
+  DATA.forEach(it => it.tags.forEach(t => set.add(t)));
+  // "All" chip
+  const all = document.createElement('button');
+  all.type='button'; all.className='chip'; all.textContent=T.all_chip; all.dataset.tag='__all';
+  all.addEventListener('click', ()=>{ chosenTags.clear(); update(); syncChips(); });
+  tagBar.appendChild(all);
+  // Tag chips
+  Array.from(set).sort().forEach(tag => {
+    const b = document.createElement('button');
+    b.type='button'; b.className='chip'; b.textContent=T.tagNames[tag]||tag; b.dataset.tag=tag;
+    b.addEventListener('click', ()=>{
+      if(chosenTags.has(tag)){ chosenTags.delete(tag); } else { chosenTags.add(tag); }
+      update(); syncChips();
+    });
+    tagBar.appendChild(b);
+  });
+  syncChips();
+}
+function syncChips(){
+  tagBar.querySelectorAll('.chip').forEach(el => {
+    const tag = el.dataset.tag;
+    if(tag==='__all'){ el.classList.toggle('active', chosenTags.size===0); }
+    else{ el.classList.toggle('active', chosenTags.has(tag)); }
+  });
+}
+
+function activationFlagText(L){
+  const s = (L.activation||'').toLowerCase();
+  if(s.includes('permanent') || s.includes('permanente')) return UI[LANG].perm_flag;
+  return UI[LANG].oneuse_flag;
+}
+
+function makeCard(item){
+  const T = UI[LANG];
+  const L = LANG==='pt-BR'? item.pt : item.en;
+  const el = document.createElement('article');
+  el.className='card';
+  el.dataset.level = item.level;
+  el.dataset.cost = item.cost;
+  el.dataset.tags = item.tags.join(',');
+  el.innerHTML = `
+    <div class="card-head"><span class="flag">${UI[LANG].flag_activation}</span><span class="tierpill">Tier ${item.tier || 1}</span></div>
+    <h2 class="title">${L.name}</h2>
+    <p class="lead">${L.desc}</p>
+    <div class="byline">
+      <span><b>${T.cost}:</b> ${item.cost} IP</span>
+      <span class="dot"></span>
+      <span><b>${T.labels.activation||'Ativação'}:</b> ${L.activation.replace(/^.*?:\s*/, '')}</span>
+    </div>
+    <ul class="meta">
+      <li><b>${T.labels.requirements}:</b> ${L.requirements}</li>
+      <li><b>${T.labels.focus}:</b> ${L.focus}</li>
+    </ul>
+    <div class="tags">${item.tags.map(t=>`<span class="tag">${T.tagNames[t]||t}</span>`).join('')}</div>
+  `;
+  return el;
+}
+
+function currentSort(){
+  // Field
+  const f = sortField.querySelector('input[name="sort_field"]:checked');
+  sortBy = (f && f.value) || 'level';
+  // Direction
+  const d = sortDir.querySelector('input[name="sort_dir"]:checked');
+  sortDirection = (d && d.value) || 'asc';
+}
+
+function update(){
+  const T = UI[LANG];
+  currentSort();
+
+  const term = norm(qEl.value);
+  const filtered = DATA.filter(it => {
+    if(tierFilter!=='all' && String((it.tier||1))!==String(tierFilter)) return false;
+    const L = LANG==='pt-BR'? it.pt : it.en;
+    const hay = norm(`${L.name} ${L.desc} ${it.tags.map(t=>T.tagNames[t]||t).join(' ')}`);
+    const okText = !term || hay.includes(term);
+    const okTags = chosenTags.size===0 || Array.from(chosenTags).every(t => it.tags.includes(t));
+    return okText && okTags;
+  });
+
+  const sorted = filtered.slice().sort((a,b)=>{
+    let cmp=0;
+    if(sortBy==='level') cmp = a.level - b.level;
+    else if(sortBy==='cost') cmp = a.cost - b.cost;
+    else {
+      const aName = (LANG==='pt-BR'?a.pt.name:a.en.name).toLowerCase();
+      const bName = (LANG==='pt-BR'?b.pt.name:b.en.name).toLowerCase();
+      cmp = aName.localeCompare(bName);
+    }
+    if(sortDirection==='desc') cmp = -cmp;
+    return cmp;
+  });
+
+  grid.innerHTML = '';
+  sorted.forEach(it => grid.appendChild(makeCard(it)));
+  const text = T.stats(sorted.length, DATA.length);
+  stats.innerHTML = text;
+  statsTop.innerHTML = text;
+}
+
+function renderAll(){
+  i18n();
+  buildTagBar();
+  buildTierFilter();
+  update();
+}
+
+
+// ----- Tier Filter -----
+const tierSeg = document.getElementById('tier_seg');
+let tierFilter = 'all';
+function buildTierFilter(){
+  tierSeg.innerHTML = '';
+  const tiers = Array.from(new Set(DATA.map(d => d.tier || 1))).sort((a,b)=>a-b);
+  function add(id, value, label, checked=false){
+    const i=document.createElement('input'); i.type='radio'; i.name='tier'; i.id=id; i.value=value; if(checked) i.checked=true;
+    const l=document.createElement('label'); l.htmlFor=id; l.textContent=label;
+    tierSeg.appendChild(i); tierSeg.appendChild(l);
+  }
+  add('tier_all','all', LANG==='pt-BR'?'Todos':'All', true);
+  tiers.forEach(t=> add('tier_'+t, String(t), String(t)));
+  tierSeg.addEventListener('change', ()=>{ const v=document.querySelector('input[name=\"tier\"]:checked').value; tierFilter=v; update(); });
+}
+
+// Collapse behavior for Tags by viewport
+function syncTagCollapse(){
+  const d = document.querySelector('details.collapse');
+  if(!d) return;
+  if (window.innerWidth < 980) d.removeAttribute('open'); else d.setAttribute('open','');
+}
+window.addEventListener('DOMContentLoaded', syncTagCollapse);
+window.addEventListener('resize', syncTagCollapse);
+
+// Events
+qEl.addEventListener('input', update);
+document.getElementById('lang_seg').addEventListener('change', (e)=>{
+  const v = document.querySelector('input[name="lang"]:checked').value;
+  LANG = v; renderAll();
+});
+document.getElementById('sort_field_seg').addEventListener('change', update);
+document.getElementById('sort_dir_seg').addEventListener('change', update);
+
+// Initial
+renderAll();
+</script>
+</body>
+</html>
