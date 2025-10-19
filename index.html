@@ -284,11 +284,11 @@
           <!-- Sort field segmented -->
           <div class="seg small" id="sort_field_seg" role="group" aria-label="Critério">
             <input type="radio" name="sort_field" id="sf_level" value="level" checked>
-            <label for="sf_level">Level</label>
+            <label for="sf_level">Nível (requisito)</label>
             <input type="radio" name="sort_field" id="sf_cost" value="cost">
-            <label for="sf_cost">Cost</label>
+            <label for="sf_cost">Custo (IP)</label>
             <input type="radio" name="sort_field" id="sf_name" value="name">
-            <label for="sf_name">Name</label>
+            <label for="sf_name">Nome</label>
           </div>
           <!-- Sort direction -->
           <div class="dir" id="sort_dir_seg" role="group" aria-label="Direção">
@@ -514,7 +514,7 @@ const UI = {
     search_label:"Palavra-chave",
     search_placeholder:"Buscar por nome, texto ou tag…",
     filter_header:"Tags",
-    sort_label_top:"Ordenar",
+    sort_label_top:"Ordenar", sort_level:"Nível (requisito)", sort_cost:"Custo (IP)", sort_name:"Nome",
     stats:(v,t)=>`Mostrando <strong>${v}</strong> de <strong>${t}</strong> itens`,
     footnote:`<strong>Nota:</strong> Este catálogo cobre apenas <em>Tier 1</em> (níveis 1–5). Para novos Tiers, copie os cards e ajuste <code>level</code>, <code>cost</code> e <code>tags</code>.`,
     labels:{ requirements:"Requisitos", focus:"Foco", cost:"Custo", activation:"Ativação" },
@@ -548,7 +548,7 @@ const UI = {
     search_label:"Keyword",
     search_placeholder:"Search by name, text or tag…",
     filter_header:"Tags",
-    sort_label_top:"Sort",
+    sort_label_top:"Sort", sort_level:"Required Level", sort_cost:"Cost (IP)", sort_name:"Name",
     stats:(v,t)=>`Showing <strong>${v}</strong> of <strong>${t}</strong> items`,
     footnote:`<strong>Note:</strong> This catalog covers only <em>Tier 1</em> (levels 1–5). For new tiers, copy cards and adjust <code>level</code>, <code>cost</code> and <code>tags</code>.`,
     labels:{ requirements:"Requirements", focus:"Focus", cost:"Cost", activation:"Activation" },
@@ -597,6 +597,9 @@ let sortDirection = 'asc'; // asc | desc
 function norm(s){ return (s||'').toLowerCase().normalize('NFD').replace(/[\\u0300-\\u036f]/g,'').replace(/\\s+/g,' ').trim(); }
 
 function i18n(){
+  const lblLevel=document.querySelector('label[for="sf_level"]');
+  const lblCost=document.querySelector('label[for="sf_cost"]');
+  const lblName=document.querySelector('label[for="sf_name"]');
   const T = UI[LANG];
   document.getElementById('title').textContent = T.title;
   document.getElementById('search_header').textContent = T.search_header;
@@ -605,6 +608,9 @@ function i18n(){
   document.getElementById('filter_header').textContent = T.filter_header;
   document.getElementById('sort_label_top').textContent = T.sort_label_top;
   document.getElementById('footnote').innerHTML = T.footnote;
+  if(lblLevel) lblLevel.textContent=T.sort_level;
+  if(lblCost)  lblCost.textContent=T.sort_cost;
+  if(lblName)  lblName.textContent=T.sort_name;
 }
 
 function buildTagBar(){
